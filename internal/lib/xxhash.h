@@ -29,7 +29,7 @@
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
    You can contact the author at :
-   - xxHash source repository : http://code.google.com/p/xxhash/
+   - xxHash source repository : https://github.com/Cyan4973/xxHash
 */
 
 /* Notice extracted from xxHash homepage :
@@ -57,8 +57,8 @@ Q.Score is a measure of quality of the hash function.
 It depends on successfully passing SMHasher test set.
 10 is a perfect score.
 
-A new 64-bits version, named XXH64, is available since r35.
-It offers better speed for 64-bits applications.
+A 64-bits version, named XXH64, is available since r35.
+It offers much better speed, but for 64-bits applications only.
 Name     Speed on 64 bits    Speed on 32 bits
 XXH64       13.8 GB/s            1.9 GB/s
 XXH32        6.8 GB/s            6.0 GB/s
@@ -77,6 +77,39 @@ extern "C" {
 #include <stddef.h>   /* size_t */
 typedef enum { XXH_OK=0, XXH_ERROR } XXH_errorcode;
 
+
+/*****************************
+*  Namespace Emulation
+*****************************/
+/* Motivations :
+
+If you need to include xxHash into your library,
+but wish to avoid xxHash symbols to be present on your library interface
+in an effort to avoid potential name collision if another library also includes xxHash,
+
+you can use XXH_NAMESPACE, which will automatically prefix any symbol from xxHash
+with the value of XXH_NAMESPACE (so avoid to keep it NULL, and avoid numeric values).
+
+Note that no change is required within the calling program :
+it can still call xxHash functions using their regular name.
+They will be automatically translated by this header.
+*/
+#ifdef XXH_NAMESPACE
+#  define XXH_CAT(A,B) A##B
+#  define XXH_NAME2(A,B) XXH_CAT(A,B)
+#  define XXH32 XXH_NAME2(XXH_NAMESPACE, XXH32)
+#  define XXH64 XXH_NAME2(XXH_NAMESPACE, XXH64)
+#  define XXH32_createState XXH_NAME2(XXH_NAMESPACE, XXH32_createState)
+#  define XXH64_createState XXH_NAME2(XXH_NAMESPACE, XXH64_createState)
+#  define XXH32_freeState XXH_NAME2(XXH_NAMESPACE, XXH32_freeState)
+#  define XXH64_freeState XXH_NAME2(XXH_NAMESPACE, XXH64_freeState)
+#  define XXH32_reset XXH_NAME2(XXH_NAMESPACE, XXH32_reset)
+#  define XXH64_reset XXH_NAME2(XXH_NAMESPACE, XXH64_reset)
+#  define XXH32_update XXH_NAME2(XXH_NAMESPACE, XXH32_update)
+#  define XXH64_update XXH_NAME2(XXH_NAMESPACE, XXH64_update)
+#  define XXH32_digest XXH_NAME2(XXH_NAMESPACE, XXH32_digest)
+#  define XXH64_digest XXH_NAME2(XXH_NAMESPACE, XXH64_digest)
+#endif
 
 
 /*****************************

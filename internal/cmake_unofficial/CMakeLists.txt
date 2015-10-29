@@ -17,13 +17,20 @@ ENDIF()
 option(BUILD_TOOLS "Build the command line tools" ON)
 option(BUILD_LIBS  "Build the libraries in addition to the tools" ON)
 
+IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" OR
+   "${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+  SET(GNU_COMPATIBLE_COMPILER 1)
+ENDIF()
+
+if(GNU_COMPATIBLE_COMPILER)
 if(UNIX AND BUILD_LIBS)
     add_definitions(-fPIC)
+endif()
 endif()
 
 set(LZ4_DIR ../lib/)
 set(PRG_DIR ../programs/)
-set(LZ4_SRCS_LIB ${LZ4_DIR}lz4.c ${LZ4_DIR}lz4hc.c ${LZ4_DIR}lz4.h ${LZ4_DIR}lz4hc.h ${LZ4_DIR}lz4frame.c ${LZ4_DIR}xxhash.c)
+set(LZ4_SRCS_LIB ${LZ4_DIR}lz4.c ${LZ4_DIR}lz4hc.c ${LZ4_DIR}lz4.h ${LZ4_DIR}lz4hc.h ${LZ4_DIR}lz4frame.c ${LZ4_DIR}lz4frame.h ${LZ4_DIR}xxhash.c)
 set(LZ4_SRCS ${LZ4_DIR}lz4frame.c ${LZ4_DIR}xxhash.c ${PRG_DIR}bench.c ${PRG_DIR}lz4cli.c ${PRG_DIR}lz4io.c)
 
 if(BUILD_TOOLS AND NOT BUILD_LIBS)
@@ -51,6 +58,7 @@ if(BUILD_LIBS)
     install(FILES
     ${LZ4_DIR}/lz4.h
     ${LZ4_DIR}/lz4hc.h
+    ${LZ4_DIR}/lz4frame.h
     DESTINATION include
     )
     
@@ -62,7 +70,12 @@ endif()
 
 #warnings
 
+if(MSVC)
+ADD_DEFINITIONS("-W4")
+endif()
+if(GNU_COMPATIBLE_COMPILER)
 ADD_DEFINITIONS("-Wall")
+endif()
 if(CMAKE_COMPILER_IS_GNUCXX)
 ADD_DEFINITIONS("-Wextra")
 ADD_DEFINITIONS("-Wundef")
@@ -70,7 +83,10 @@ ADD_DEFINITIONS("-Wshadow")
 ADD_DEFINITIONS("-Wcast-align")
 ADD_DEFINITIONS("-Wstrict-prototypes")
 endif(CMAKE_COMPILER_IS_GNUCXX)
+if(GNU_COMPATIBLE_COMPILER AND
+   (NOT CMAKE_SYSTEM_NAME MATCHES "SunOS"))
 ADD_DEFINITIONS("-std=c99")
+endif()
 ADD_DEFINITIONS("-DLZ4_VERSION=\"${CPACK_PACKAGE_VERSION_PATCH}\"")
 INCLUDE_DIRECTORIES (${LZ4_DIR})
 
